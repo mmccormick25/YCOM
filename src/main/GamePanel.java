@@ -51,7 +51,7 @@ public class GamePanel extends JPanel implements Runnable{
 	int mouseCol;
 	
 	// Board grid
-	private Tile[][] grid = new Tile[numCols][numRows];
+	private Tile[][] grid;
 	
 	// Player and enemy soldiers
 	Set<Character> playerSoldiers = new HashSet<>();
@@ -60,12 +60,19 @@ public class GamePanel extends JPanel implements Runnable{
 	// Player selected soldier
 	PlayerSoldier selectedSoldier;
 	
+	int unmovedSoldiers;
+	
 	// Draws accuracy over enemies when shooting
 	boolean drawAccuracy = false;
 	
 	// Wall and tile object sets
 	Set<TileObject> tileObjects = new HashSet<>();
 	Set<Wall> walls = new HashSet<>();
+	
+	// Map names and level counter
+	String[] mapNames = {"map1.txt", "map2.txt", "map2.txt"};
+	int level = 1;
+	static boolean nextLevelClicked = false;
 	
 	// Game thread
 	int FPS = 30;
@@ -98,6 +105,15 @@ public class GamePanel extends JPanel implements Runnable{
 	
 	public void initialize() {
 		
+		if (level > mapNames.length) {
+			System.exit(0);
+		}
+		
+		playerSoldiers.clear();
+		enemySoldiers.clear();
+		tileObjects.clear();
+		walls.clear();
+		grid = new Tile[numCols][numRows];
 		// Creating board
 		for (int r = 0; r < numRows; r++) {
 			for (int c = 0; c < numCols; c++) {
@@ -111,7 +127,7 @@ public class GamePanel extends JPanel implements Runnable{
 		try {
 			
 			// Setting up board from txt file
-			Scanner scanner = new Scanner(new File("src/maps/map1.txt"));
+			Scanner scanner = new Scanner(new File("src/maps/" + mapNames[level - 1]));
 			String line;
 			while (scanner.hasNextLine()) {
 				line = scanner.nextLine();
@@ -156,10 +172,13 @@ public class GamePanel extends JPanel implements Runnable{
 						PlayerSoldier s = new PlayerSoldier(readRow, readCol, 4, new Shotgun(), 4, 2);
 						playerSoldiers.add(s);
 					} else if (c == 'a') {
-						EnemySoldier e = new EnemySoldier(readRow, readCol, 4, new Rifle(), 4, 2);
+						EnemySoldier e = new EnemySoldier(randomPos(readRow), randomPos(readCol), 4, new Rifle(), 4, 2);
 						enemySoldiers.add(e);
 					} else if (c == 's') {
-						EnemySoldier e = new EnemySoldier(readRow, readCol, 4, new SniperRifle(), 4, 2);
+						EnemySoldier e = new EnemySoldier(randomPos(readRow), randomPos(readCol), 4, new SniperRifle(), 4, 2);
+						enemySoldiers.add(e);
+					} else if (c == 't') {
+						EnemySoldier e = new EnemySoldier(randomPos(readRow), randomPos(readCol), 4, new Shotgun(), 4, 2);
 						enemySoldiers.add(e);
 					}
 				}
@@ -170,8 +189,25 @@ public class GamePanel extends JPanel implements Runnable{
 			e.printStackTrace();
 		}
 		
+		unmovedSoldiers = playerSoldiers.size();
 		repaint();
 		
+	}
+	
+	public int randomPos(int n) {
+		Random random = new Random();
+		int r = random.nextInt(2);
+		
+		switch(r) {
+			case 0:
+				return n-1;
+			case 1:
+				return n;
+			case 2:
+				return n+1;
+		}
+		
+		return n;
 	}
 	
 	public void startGameThread() {
@@ -181,9 +217,9 @@ public class GamePanel extends JPanel implements Runnable{
 	}
 	
 	// Checks if player is at clicked tile
-	public Character checkForPlayer() {
+	public Character checkForPlayer(int row, int col) {
 		for(Character s : playerSoldiers) {
-			if(s.getRow() == mouseRow && s.getCol() == mouseCol) {
+			if(s.getRow() == row && s.getCol() == col) {
 				return s;
 			}
 		}
@@ -191,9 +227,9 @@ public class GamePanel extends JPanel implements Runnable{
 	}
 	
 	// Checks if enemy is at clicked tile
-	public Character checkForEnemy() {
+	public Character checkForEnemy(int row, int col) {
 		for(Character e : enemySoldiers) {
-			if(e.getRow() == mouseRow && e.getCol() == mouseCol) {
+			if(e.getRow() == row && e.getCol() == col) {
 				return e;
 			}
 		}
@@ -333,7 +369,7 @@ public class GamePanel extends JPanel implements Runnable{
 		while(true) {
 			if(updateMouse) {
 				// Checking if player or enemy is on square
-				if(checkForPlayer() != null || checkForEnemy() != null || checkTileObject(mouseRow, mouseCol) != null) {
+				if(checkForPlayer(mouseRow, mouseCol) != null || checkForEnemy(mouseRow, mouseCol) != null || checkTileObject(mouseRow, mouseCol) != null) {
 					updateMouse = false;
 					continue;
 				}
@@ -361,18 +397,19 @@ public class GamePanel extends JPanel implements Runnable{
 	}
 	
 	public void playerSelect() {
-		Main.uiPanel.setPrompt("Move");
 		boolean playerInAction = false;
 		// Currently selected soldier
 		Character s;
 		// Old selected soldier
 		Character oldS;
-		int unmovedSoldiers = playerSoldiers.size();
+		unmovedSoldiers = playerSoldiers.size();
+		
+		boolean levelWon = false;
 		// Repeat until char selected
 		while(true) {
 			// If mouse updated and no player selected
 			if(updateMouse && !playerInAction) {
-				s = checkForPlayer();
+				s = checkForPlayer(mouseRow, mouseCol);
 				
 				// If mouse clicked on player
 				if (s != null) {
@@ -398,7 +435,7 @@ public class GamePanel extends JPanel implements Runnable{
 							
 							if (shootClicked) {
 								playerInAction = true;
-								playerShoot();
+								levelWon = playerShoot();
 								playerInAction = false;
 								shootClicked = false;
 								s.actions = 0;
@@ -425,8 +462,9 @@ public class GamePanel extends JPanel implements Runnable{
 				}
 			}
 			
+			
 			// Ending turn if all soldiers moved
-			if (unmovedSoldiers <= 0) {
+			if (unmovedSoldiers <= 0 || levelWon) {
 				break;
 			}
 			
@@ -743,13 +781,12 @@ public class GamePanel extends JPanel implements Runnable{
 		}
 	}
 	
-	public void playerShoot() {
-		Main.uiPanel.setPrompt("Shoot");
+	public boolean playerShoot() {
 		Map<Character, Integer> targets = getTargets(selectedSoldier, enemySoldiers);
 		drawAccuracy = true;
 		while(true) {
 			if(updateMouse) {
-				Character e = checkForEnemy();
+				Character e = checkForEnemy(mouseRow, mouseCol);
 				if(e == null) {
 					updateMouse = false;
 					continue;
@@ -766,7 +803,18 @@ public class GamePanel extends JPanel implements Runnable{
 				}
 				
 				if (enemySoldiers.size() == 0) {
+					repaint();
 					EndLevel end = new EndLevel(true);
+					while (!nextLevelClicked) {
+						try {
+							 Thread.sleep(10);
+						} catch (InterruptedException ex) {
+							 Thread.currentThread().interrupt();
+						}	
+					}
+					level++;
+					initialize();
+					return true;
 				}
 				
 				updateMouse = false;
@@ -781,13 +829,12 @@ public class GamePanel extends JPanel implements Runnable{
 		}
 		
 		drawAccuracy = false;
-		
 		repaint();
+		return false;
 	}
 	
 	
 	public void enemyMove() {
-		Main.uiPanel.setPrompt("Enemy Move");
 		Set<Tile> enemyMoves = new HashSet<>();
 		for(Character e : enemySoldiers) {
 			enemyMoves = getMoves(grid[e.getRow()][e.getCol()], e.movement);
@@ -799,9 +846,11 @@ public class GamePanel extends JPanel implements Runnable{
 					double yDist = Math.pow(s.getCol() - t.getCol(), 2);
 					double dist = Math.sqrt(xDist + yDist);
 					if (dist < closestDist && (t.adjWalls.size() > 0 || getCover(t).size() > 0)) {
-						targetMove = t;
-						closestDist = dist;
-					}
+						if (checkForPlayer(t.getRow(), t.getCol()) == null && checkForEnemy(t.getRow(), t.getCol()) == null) {
+							targetMove = t;
+							closestDist = dist;
+						}
+					}	
 				}
 			}
 			
@@ -812,7 +861,6 @@ public class GamePanel extends JPanel implements Runnable{
 	}
 	
 	public void enemyShoot(Character e) {
-		Main.uiPanel.setPrompt("Enemy Shooting");
 		Map<Character, Integer> targets = getTargets(e, playerSoldiers);
 		Character bestTarget = new Character();
 		int bestAccuracy = 0;
@@ -837,6 +885,12 @@ public class GamePanel extends JPanel implements Runnable{
 		
 		if (playerSoldiers.size() == 0) {
 			EndLevel end = new EndLevel(false);
+		}
+		
+		try {
+			 Thread.sleep(1000);
+		} catch (InterruptedException ex) {
+			 Thread.currentThread().interrupt();
 		}
 		
 	}
@@ -865,8 +919,9 @@ public class GamePanel extends JPanel implements Runnable{
 		int drawCount = 0;
 		
 		while(gameThread != null) {
-
+			Main.uiPanel.setPrompt("Player Turn");
 			playerSelect();
+			Main.uiPanel.setPrompt("Enemy Turn");
 			enemyTurn();
 			
 			currentTime = System.nanoTime();
@@ -906,11 +961,6 @@ public class GamePanel extends JPanel implements Runnable{
 			}
 		}
 		
-		for (Character s : playerSoldiers) {
-			s.draw(g2);
-			s.drawHealth(g2, Color.blue, tileSize);
-		}
-		
 		for (TileObject t : tileObjects) {
 			t.draw(g2);
 		}
@@ -922,6 +972,11 @@ public class GamePanel extends JPanel implements Runnable{
 		for (Character e : enemySoldiers) {
 			e.draw(g2);
 			e.drawHealth(g2, Color.red, tileSize);
+		}
+		
+		for (Character s : playerSoldiers) {
+			s.draw(g2);
+			s.drawHealth(g2, Color.blue, tileSize);
 		}
 		
 		if (drawAccuracy) {

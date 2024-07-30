@@ -59,7 +59,8 @@ public class EndLevel extends JFrame implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (won) {
-			System.exit(0);
+			GamePanel.nextLevelClicked = true;
+			this.dispose();
 		} else {
 			System.exit(0);
 		}
