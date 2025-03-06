@@ -70,7 +70,7 @@ public class GamePanel extends JPanel implements Runnable{
 	Set<Wall> walls = new HashSet<>();
 	
 	// Map names and level counter
-	String[] mapNames = {"map1.txt", "map2.txt", "map2.txt"};
+	String[] mapNames = {"map1.txt", "map2.txt", "map3.txt"};
 	int level = 1;
 	static boolean nextLevelClicked = false;
 	
