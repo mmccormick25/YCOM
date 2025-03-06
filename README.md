@@ -8,7 +8,8 @@ Defeat the enemies in all three levels.
 
 How to Play:
 On each turn of the game, you will move and shoot with all of your soldiers, then the enemy will move and shoot with all of their soldiers. To start your turn, select
-your soldier on the blue team that you want to move, which will highlight them. Now click the move button. From there, select the tile that you want to move to. 
+your soldier on the blue team that you want to move, which will highlight them. Once you select a soldier, you must move them before selecting another soldier. 
+Now click the move button. From there, select the tile that you want to move to. 
 After that, you can either move again, or shoot. Once you shoot, the chance of you hitting a red enemy will appear above their sprite. Select
 the enemy that you want to shoot. If you hit an enemy, their health bar above will go down. Shooting will end the character's turn, making them turn grey. 
 Select your other soldiers and repeat this process. After you move all your soldiers the enemy will move and shoot. Currently only the move and shoot buttons are working,
