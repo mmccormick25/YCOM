@@ -4,7 +4,8 @@ Running the Game:
 After downloading and extracting the projet, run the Main.java file within the main package in the src folder.
 
 Goal:
-Defeat the enemies in all three levels.
+Defeat the enemies in all three levels. 
+WARNING: This is not easy!
 
 How to Play:
 On each turn of the game, you will move and shoot with all of your soldiers, then the enemy will move and shoot with all of their soldiers. To start your turn, select
