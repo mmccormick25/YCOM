@@ -21,15 +21,15 @@ the type of weapon they have for the best chance of winning.
 
 Guns:
 Assault Rifle - 
-Default Accuracy: 80%
-Damage rolls: 3, 3, 3, 4, 4
+(Default Accuracy: 80%)
+(Damage rolls: 3, 3, 3, 4, 4)
 
 Sniper -
-Default Accuracy: 0.95%
-Damage Rolls: 3, 3, 4, 4, 4
+(Default Accuracy: 0.95%)
+(Damage Rolls: 3, 3, 4, 4, 4)
 
 Shotgun - 
-Default Accuracy: 70%
-Damage Rolls: 3, 3, 4, 4, 5
+(Default Accuracy: 70%)
+(Damage Rolls: 3, 3, 4, 4, 5)
 
 
