@@ -1,7 +1,7 @@
 This project is a 2D recreation/reimagining of the 3D turn based XCOM 2 game.
 
 Running the Game:
-After downloading and extracting the projet, run the Main.java file within the main package in the src folder.
+After downloading and extracting the projet, run the Main.java file in the src folder.
 
 Goal:
 Defeat the enemies in all three levels. 
